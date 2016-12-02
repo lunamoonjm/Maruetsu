@@ -122,7 +122,7 @@ class Ghost(pygame.sprite.Sprite):
 
         self.images = []
 
-        for i in range(0, 3):
+        for i in range(0, 4):
             img = pygame.image.load("ghost"+str(i)+".png").convert()
             img.set_colorkey(black)
             self.images.append(img)
@@ -176,6 +176,56 @@ class Ghost1(Ghost):
             bullets.remove(self)
             all_sprite.remove(self)
 
+class Ghost2(Ghost):
+    speed_x = 0
+    speed_y = 0
+    px = 0
+    py = 0
+
+    def __init__(self):
+        Ghost.__init__(self)
+
+        self.sl = random.randrange(4)  #상 하 좌 우
+        if self.sl == 0:
+            self.rect.y = -50
+            self.image = self.images[3]
+            self.rect.x = random.randrange(50, 400)
+
+        elif self.sl == 1:
+            self.rect.y = 550
+            self.image = self.images[3]
+            self.rect.x = random.randrange(50, 400)
+
+        elif self.sl == 2:
+            self.rect.x = -50
+            self.image = self.images[3]
+            self.rect.y = random.randrange(50, 400)
+
+        elif self.sl == 3:
+            self.rect.x = 550
+            self.image = self.images[3]
+            self.rect.y = random.randrange(50, 400)
+
+    def update(self):   #오류있음
+        if self.rect.x < self.px :
+            self.speed_x = 5
+        else :
+            self.speed_x = -5
+
+        if self.rect.y < self.py :
+            self.speed_y = 5
+        else :
+            self.speed_y = -5
+
+        self.rect.x += self.speed_x
+        self.rect.y += self.speed_y
+
+        if self.rect.x > 600 or  self.rect.x < -100 or self.rect.y > 600 or self.rect.y < -100:   #테두리 밖 소멸
+            bullets.remove(self)
+            all_sprite.remove(self)
+
+
+
 class Soul(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -222,12 +272,13 @@ player.rect.y = 370
 ghosts = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 souls = pygame.sprite.Group()
+ghosts2 = pygame.sprite.Group()
 all_sprite = pygame.sprite.Group()
 all_sprite.add(player)
 
 key_list = [0, 0, 0, 0]
 delay = 0
-ghost_list = [1, 0]
+ghost_list = [1, 0, 0]
 global gauge
 gauge = 200
 done = False
@@ -308,6 +359,7 @@ while done==False:
     if delay % 100 == 0:
         if round(now_time - start_time, 1) > 10: #2번째 유령 타이밍 조절
             ghost_list[1] = 1
+            ghost_list[2] = 1
 
         ghost0 = Ghost0()
         ghosts.add(ghost0)
@@ -317,6 +369,11 @@ while done==False:
             ghost1 = Ghost1()
             ghosts.add(ghost1)
             all_sprite.add(ghost1)
+
+        if ghost_list[2] == 1:
+            ghost2 = Ghost2()
+            ghosts2.add(ghost2)
+            all_sprite.add(ghost2)
 
     #플레이어 충돌처리
     player_hits = pygame.sprite.spritecollide(player, ghosts, False)
@@ -329,6 +386,9 @@ while done==False:
         if gauge > 200 :
             gauge = 200
         #스코어 추가 요망
+    ghosts2.px = player.rect.x
+    ghosts2.py = player.rect.y
+
 
     if gameover == True:
         gotext = font.render("GAME OVER", True, white)
